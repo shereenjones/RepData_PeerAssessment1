@@ -1,11 +1,6 @@
 Reproducible Research - Peer Assessment 1
 =========================================
 
-Set default R Markdown Options
-```{r setoptions, echo=FALSE}
-
-```
-
 ## Introduction
 
 It is now possible to collect a large amount of data about personal movement using activity monitoring devices such as a Fitbit, Nike Fuelband, or Jawbone Up. These type of devices are part of the “quantified self” movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. But these data remain under-utilized both because the raw data are hard to obtain and there is a lack of statistical methods and software for processing and interpreting the data.
@@ -94,6 +89,9 @@ the median of the total number of steps taken per day is `r df1_median`.
 
 1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
+##### Special note: Plot shows as line graph in R Studio, but not in R markdown.  Not sure why!
+
+
 ```{r aggregateperinterval}
     df2a <- aggregate(df$steps ~ df$interval, data=df, mean)
     df2b <- aggregate(df$steps ~ df$interval, data=df, sum)
@@ -165,6 +163,7 @@ For this part the weekdays() function may be of some help here. Use the dataset 
 
 1.Create a new factor variable in the dataset with two levels – “weekday” and “weekend” indicating whether a given date is a weekday or weekend day.
 
+
 ```{r weekdaysetup}
     library(ggplot2)
     df4$date <- as.Date(df4$date, "%Y-%m-%d")
@@ -178,6 +177,10 @@ For this part the weekdays() function may be of some help here. Use the dataset 
     df5 <- aggregate (df4$steps ~ df4$interval + df4$wdaytype, data=df4, mean)
     colnames(df5) <- c("interval", "wdaytype", "average_steps")
 ```
+
+
+
+##### Again problems with the line graph!  Fine in R Studio but not in the HTML file produced from knitr
 
 2.Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
 
