@@ -34,6 +34,13 @@ NOTE: The GitHub repository also contains the dataset for the assignment so you 
 
 ## Loading and preprocessing the data
 
+```{r setup}
+     library(plyr)
+     library(reshape2)
+     library(ggplot2)
+     options(scipen=100)
+```
+
 Show any code that is needed to
 
 1.Load the data (i.e. read.csv())
@@ -43,13 +50,11 @@ Show any code that is needed to
     df <- read.csv("activity.csv")
 ```
 
-
-2.Process/transform the data (if necessary) into a format suitable for your analysis
+2. Transform the data into a format suitable for your analysis
 
 ```{r transformdata}
-    df$interval <- as.factor(df$interval)
+    df$date <- as.Date(df$date, "%Y-%m-%d")
 ```
-
 
 ## What is mean total number of steps taken per day?
 
@@ -61,45 +66,38 @@ For this part of the assignment, you can ignore the missing values in the datase
     df1a <- aggregate(df$steps ~ df$date, data=df, sum)
     df1b <- aggregate(df$steps ~ df$date, data=df, mean)
     colnames(df1a) <- c("date", "total_steps")
-    colnames(df1b) <- c("date", "average_stes")
-
+    colnames(df1b) <- c("date", "average_steps")
 ```
 
 
 2. Make a histogram of the total number of steps taken each day
 
 ```{r plot1}
-    hist(df1a$total_steps, col="blue", xlab="Number of Steps per Day", ylab="Frequency")
-
+    hist(df1a$total_steps, col="blue", xlab="Total Steps per Day", ylab="Frequency", main="Total Steps Per Day Frequency")
 ```
 
 
 3.  Calculate and report the mean and median of the total number of steps taken per day
 
 ```{r dailymean}
-    df1_mean <- mean(df1a$total_steps)
-    df1_median <- median(df1a$total_steps)
+    df1_mean <- round(mean(df1a$total_steps),0)
+    df1_median <- round(median(df1a$total_steps),0)
 ```
 
-The mean of the total number of steps taken per day is `r df1_mean`.
-the median of the total number of steps taken per day is `r df1_median`.
+**The mean of the total number of steps taken per day is `r df1_mean`.**
+**The median of the total number of steps taken per day is `r df1_median`.**
+
+
 
 
 ## What is the average daily activity pattern?
 
 1. Make a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-##### Special note: Plot shows as line graph in R Studio, but not in R markdown.  Not sure why!
-
-
 ```{r aggregateperinterval}
     df2a <- aggregate(df$steps ~ df$interval, data=df, mean)
-    df2b <- aggregate(df$steps ~ df$interval, data=df, sum)
     colnames(df2a) <- c("interval","average_steps")
-    colnames(df2b) <- c("interval","total_steps")
-    plot(df2a$interval, df2a$average_steps, type="l", col="blue",
-         main="Average Steps per Interval", xlab="Interval",
-         ylab="Average Steps")
+    plot(df2a$interval, df2a$average_steps, type="l", main="Average Steps per Interval", xlab="Interval", ylab="Average Steps")
 ```
 
 2.Which 5-minute interval, on average across all the days in the dataset, contains the maximum number of steps?
@@ -109,7 +107,9 @@ the median of the total number of steps taken per day is `r df1_median`.
     max_interval <- max_row[1,1]
 ```
 
-Interval `r max_interval` contains the maximum average numer of steps.
+**Interval `r max_interval` contains the maximum average numer of steps.**
+
+
     
 
 
@@ -123,7 +123,9 @@ Note that there are a number of days/intervals where there are missing values (c
     num_empty_rows <- nrow(df[is.na(df$steps),])
 ```
 
-The number of rows with missing values in the dataset is 'r num_empty_rows'.
+**The number of rows with missing values in the dataset is `r num_empty_rows`.**
+
+
 
 
 2.Devise a strategy for filling in all of the missing values in the dataset. The strategy does not need to be sophisticated. For example, you could use the mean/median for that day, or the mean for that 5-minute interval, etc.
@@ -150,11 +152,17 @@ Remove the added 4th column (average interval steps) to create the requested dat
 ```{r plot3}
     df4a <- aggregate(df4$steps ~ df4$date, data=df4, sum)
     colnames(df4a) <- c("date", "total_steps")
-    hist(df4a$total_steps, col="blue", xlab="Number of Steps per Day", ylab="Frequency")
-
+    hist(df4a$total_steps, col="blue", xlab="Number of Steps per Day", ylab="Frequency", main="Total Steps Per Day Frequency With Imputed Data")
+    df4a_mean <- round(mean(df4a$total_steps),0)
+    df4a_median <- round(median(df4a$total_steps),0)
 ```
 
-### There is little impact of imputing missing data.  The overall shape of the graph is basically unchanged.
+**The mean total number of daily steps after imputing values is `r df4a_mean`.**
+**The median total number of daily steps after imputing values is `r df4a_median`.**
+**Given that both the mean and the median are the same or almost the same as prior to imputing values and the fact that the overall shape of the histogram is basically unchanged, it is safe to say that there is little impact of imputing missing data on this analysis.**
+
+
+
 
 
 ## Are there differences in activity patterns between weekdays and weekends?
@@ -165,7 +173,6 @@ For this part the weekdays() function may be of some help here. Use the dataset 
 
 
 ```{r weekdaysetup}
-    library(ggplot2)
     df4$date <- as.Date(df4$date, "%Y-%m-%d")
     df4$wday <- weekdays(df4$date)
     y1 <- row.names(df4[(df4$wday =="Sunday" | df4$wday == "Saturday"),]) 
@@ -179,14 +186,16 @@ For this part the weekdays() function may be of some help here. Use the dataset 
 ```
 
 
-
-##### Again problems with the line graph!  Fine in R Studio but not in the HTML file produced from knitr
-
 2.Make a panel plot containing a time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all weekday days or weekend days (y-axis). See the README file in the GitHub repository to see an example of what this plot should look like using simulated data.
 
-```{r plot4}    
-    qplot(interval, average_steps, data=df5, facets= wdaytype ~ .) + geom_line()
+```{r plot4, fig.width=4, fig.height=3}
+    qplot(interval, average_steps, data=df5, color=wdaytype, facets= wdaytype ~ .) + geom_line()
 ```   
 
+**Or better yet - review the plots together:**
+
+```{r plot5}
+     ggplot(data=df5, aes(x=interval, y=average_steps, group=wdaytype, colour=wdaytype)) + geom_line()
+```
 
 
